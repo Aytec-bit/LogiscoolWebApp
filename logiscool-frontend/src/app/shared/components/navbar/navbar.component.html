@@ -1,0 +1,22 @@
+<nav class="navbar">
+  <a routerLink="/" class="navbar-brand">Logiscool Events</a>
+
+  <div class="navbar-links">
+    <a *ngIf="authService.isLoggedIn()" routerLink="/reservations" class="nav-link">
+      Mes réservations
+    </a>
+    <a *ngIf="isAdmin()" routerLink="/admin" class="nav-link">
+      Administration
+    </a>
+  </div>
+
+  <div class="navbar-actions">
+    <ng-container *ngIf="authService.isLoggedIn(); else notLoggedIn">
+      <span class="navbar-user">{{ authService.getUserId() }}</span>
+      <button class="btn btn-outline" (click)="logout()">Déconnexion</button>
+    </ng-container>
+    <ng-template #notLoggedIn>
+      <button class="btn btn-primary" (click)="login()">Se connecter</button>
+    </ng-template>
+  </div>
+</nav>

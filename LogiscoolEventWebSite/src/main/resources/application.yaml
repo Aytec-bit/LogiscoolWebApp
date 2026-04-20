@@ -1,0 +1,20 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: LogiscoolEventWebSite
+  datasource:
+    url: jdbc:postgresql://localhost:5433/event
+    username: postgre
+    password: aytec
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/logiscool

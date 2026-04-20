@@ -1,0 +1,39 @@
+<div class="reservations-container">
+  <h1>Mes réservations</h1>
+
+  <div *ngIf="loading" class="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <p *ngIf="!loading && !error && reservations.length === 0">
+    Vous n'avez aucune réservation pour le moment.
+  </p>
+
+  <div class="reservations-list" *ngIf="!loading && !error && reservations.length > 0">
+    <div
+      class="reservation-card"
+      *ngFor="let r of reservations"
+      [class.cancelled]="r.status === 'CANCELLED'"
+    >
+      <div class="reservation-info">
+        <h2>{{ r.event.title }}</h2>
+        <p>{{ r.event.date | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p>{{ r.event.location }}</p>
+        <p class="reservation-date">Réservé le {{ r.reservationDate | date:'dd/MM/yyyy' }}</p>
+        <span
+          class="status-badge"
+          [class.status-confirmed]="r.status === 'CONFIRMED'"
+          [class.status-cancelled]="r.status === 'CANCELLED'"
+        >
+          {{ r.status === 'CONFIRMED' ? 'Confirmée' : 'Annulée' }}
+        </span>
+      </div>
+      <button
+        *ngIf="r.status === 'CONFIRMED'"
+        class="btn btn-danger"
+        (click)="cancel(r.id)"
+      >
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>

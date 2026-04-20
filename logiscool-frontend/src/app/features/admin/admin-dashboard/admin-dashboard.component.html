@@ -1,0 +1,75 @@
+<div class="admin-container">
+  <h1>Administration des événements</h1>
+
+  <!-- Formulaire de création -->
+  <section class="create-section">
+    <h2>Créer un événement</h2>
+    <form (ngSubmit)="createEvent()" #eventForm="ngForm" class="create-form">
+      <div class="form-group">
+        <label for="title">Titre *</label>
+        <input id="title" type="text" [(ngModel)]="newEvent.title" name="title" required />
+      </div>
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea id="description" [(ngModel)]="newEvent.description" name="description" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="location">Lieu *</label>
+        <input id="location" type="text" [(ngModel)]="newEvent.location" name="location" required />
+      </div>
+      <div class="form-group">
+        <label for="seat">Nombre de places *</label>
+        <input id="seat" type="number" [(ngModel)]="newEvent.seat" name="seat" min="1" required />
+      </div>
+      <div class="form-group">
+        <label for="date">Date et heure *</label>
+        <input id="date" type="datetime-local" [(ngModel)]="newEvent.date" name="date" required />
+      </div>
+      <div class="form-group">
+        <label for="lengthTime">Durée *</label>
+        <input id="lengthTime" type="time" [(ngModel)]="newEvent.lengthTime" name="lengthTime" required />
+      </div>
+
+      <p *ngIf="createError" class="error">{{ createError }}</p>
+      <p *ngIf="createSuccess" class="success">Événement créé avec succès.</p>
+
+      <button type="submit" class="btn btn-primary" [disabled]="submitting">
+        {{ submitting ? 'Création en cours...' : "Créer l'événement" }}
+      </button>
+    </form>
+  </section>
+
+  <!-- Liste des événements existants -->
+  <section class="events-section">
+    <h2>Événements existants</h2>
+
+    <div *ngIf="loading" class="loading">Chargement...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <p *ngIf="!loading && !error && events.length === 0">Aucun événement pour le moment.</p>
+
+    <table *ngIf="!loading && !error && events.length > 0" class="events-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Date</th>
+          <th>Lieu</th>
+          <th>Places</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of events">
+          <td>{{ event.title }}</td>
+          <td>{{ event.date | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ event.location }}</td>
+          <td>{{ event.seat }}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" (click)="deleteEvent(event.id)">
+              Supprimer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

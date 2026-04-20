@@ -1,0 +1,19 @@
+<div class="event-list-container">
+  <h1>Événements Logiscool</h1>
+
+  <p *ngIf="loading">Chargement en cours...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <div class="event-grid" *ngIf="!loading && !error">
+    <div class="event-card" *ngFor="let event of events">
+      <h2>{{ event.title }}</h2>
+      <p class="event-date">{{ event.date | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p class="event-location">{{ event.location }}</p>
+      <p class="event-seats">Places disponibles : {{ event.seat }}</p>
+
+      <a [routerLink]="['/events', event.id]" class="btn btn-primary">Voir les détails</a>
+    </div>
+  </div>
+
+  <p *ngIf="!loading && !error && events.length === 0">Aucun événement disponible.</p>
+</div>
