@@ -13,6 +13,7 @@ export function initializeKeycloak(): () => Promise<boolean> {
       .init({
         onLoad: 'check-sso',
         silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
+        checkLoginIframe: false, // Désactivé : retiré dans Keycloak 26 et cause des redirects intempestifs
       })
       .catch(() => false);
 }

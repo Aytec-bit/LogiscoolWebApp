@@ -11,14 +11,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  // Rafraîchit le token si nécessaire.
-  // On gère l'échec du refresh DANS la Promise (avant conversion en Observable)
-  // pour ne pas intercepter les erreurs HTTP (4xx/5xx) qui doivent
-  // remonter normalement jusqu'aux composants.
+  // Essaie de rafraîchir le token si nécessaire.
+  // En cas d'échec du refresh, on continue avec le token actuel (ou sans token) :
+  // le serveur renverra 401, et les composants gèreront le login de façon explicite.
+  // On ne redirige JAMAIS automatiquement ici pour ne pas casser l'affichage des erreurs.
   const updateToken$ = from(
-    keycloak.updateToken(30).catch(() => {
-      authService.login(); // redirige vers Keycloak, la page est déchargée
-    })
+    keycloak.updateToken(30).catch(() => false)
   );
 
   return updateToken$.pipe(
@@ -29,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
           : req
       );
-      // Les erreurs HTTP (400, 403, 404, 500…) remontent aux composants — pas catchées ici
+      // Les erreurs HTTP (400, 401, 403, 409, 500…) remontent aux composants — pas catchées ici
     })
   );
 };
