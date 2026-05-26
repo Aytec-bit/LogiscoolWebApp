@@ -1,0 +1,78 @@
+<div class="event-detail-container">
+  <a routerLink="/" class="back-link">← Retour aux événements</a>
+
+  @if (loading) {
+    <div class="loading-state">Chargement de l'événement…</div>
+  }
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+  @if (event && !loading) {
+    <div class="event-detail">
+      <div class="event-detail-header">
+        <div class="header-badges">
+          @if (event.type) {
+            <span class="badge badge-type">{{ event.type }}</span>
+          }
+          @if (event.targetAge) {
+            <span class="badge badge-age">{{ event.targetAge }}</span>
+          }
+        </div>
+        <h1>{{ event.title }}</h1>
+        <span class="badge badge-primary">{{ event.seat }} places disponibles</span>
+      </div>
+
+      <div class="event-detail-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Date</span>
+            <span class="info-value">{{ event.date | date:'dd MMMM yyyy · HH:mm' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Durée</span>
+            <span class="info-value">{{ event.lengthTime }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Lieu</span>
+            <span class="info-value">{{ event.location }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Prix</span>
+            <span class="info-value">{{ event.price != null ? (event.price | number:'1.2-2') + ' €' : 'Gratuit' }}</span>
+          </div>
+        </div>
+
+        <p class="event-description">{{ event.description }}</p>
+
+        <div class="reservation-section">
+          <h2>Réserver une place</h2>
+
+          @if (authService.isLoggedIn()) {
+            @if (reservationSuccess) {
+              <div class="alert alert-success reservation-success">
+                <p>Votre réservation a été enregistrée avec succès.</p>
+                <a routerLink="/reservations">Voir mes réservations</a>
+              </div>
+            } @else {
+              @if (reservationError) {
+                <div class="alert alert-error" style="margin-bottom:.75rem">{{ reservationError }}</div>
+              }
+              <button
+                class="btn btn-primary"
+                (click)="reserve()"
+                [disabled]="reserving"
+              >
+                {{ reserving ? 'Réservation en cours…' : 'Réserver cet événement' }}
+              </button>
+            }
+          } @else {
+            <div class="login-prompt">
+              <p>Connectez-vous pour réserver une place à cet événement.</p>
+              <button class="btn btn-primary" (click)="authService.login()">Se connecter</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

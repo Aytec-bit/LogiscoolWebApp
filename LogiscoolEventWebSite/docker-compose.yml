@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_NAME:-event}
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  my-keycloak:
+    image: quay.io/keycloak/keycloak:26.2.3
+    environment:
+      KC_HOSTNAME: ${KC_HOSTNAME:-localhost}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    command: start-dev --import-realm
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q ':1F90 ' /proc/net/tcp6"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-event}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      KEYCLOAK_JWK_SET_URI: http://my-keycloak:8080/realms/logiscool/protocol/openid-connect/certs
+      SPRING_PROFILES_ACTIVE: prod
+      JPA_DDL_AUTO: update
+    depends_on:
+      db:
+        condition: service_healthy
+      my-keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8090/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ../logiscool-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
