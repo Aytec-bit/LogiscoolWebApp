@@ -20,13 +20,15 @@ Il existe **deux modes** selon ce que tu veux faire :
 git clone https://github.com/Aytec-bit/LogiscoolWebApp.git
 cd LogiscoolWebApp/LogiscoolEventWebSite
 
-# 2. Créer le fichier de configuration (obligatoire, une seule fois)
+# 2. ⚠️ OBLIGATOIRE — créer le fichier .env (sans ça, docker compose échoue)
 copy .env.example .env        # Windows
 # cp .env.example .env        # macOS / Linux
 
 # 3. Tout démarrer
 docker compose up -d
 ```
+
+> ⚠️ **L'étape 2 est indispensable.** Sans le fichier `.env`, le backend démarre avec des variables vides et plante immédiatement.
 
 Docker construit et démarre automatiquement :
 - **PostgreSQL 17** — base de données (port `5433`)
