@@ -19,7 +19,7 @@ public class ReservationJpaEntity {
 
     private String userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_id", nullable = false)
     private EventJpaEntity event;
 
