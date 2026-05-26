@@ -29,6 +29,10 @@ export class EventDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadEvent();
+  }
+
+  private loadEvent(): void {
     const id = this.route.snapshot.paramMap.get('id');
     this.http.get<EventResponse>(`${environment.apiUrl}/api/events/${id}`).subscribe({
       next: (data) => {
@@ -54,10 +58,14 @@ export class EventDetailComponent implements OnInit {
       next: () => {
         this.reservationSuccess = true;
         this.reserving = false;
+        // Recharger l'événement pour afficher le nombre de places à jour
+        this.loadEvent();
       },
       error: (err) => {
         if (err.status === 401) {
           this.authService.login();
+        } else if (err.status === 409) {
+          this.reservationError = err.error?.message || 'Vous avez déjà réservé cet événement ou il est complet.';
         } else {
           this.reservationError = 'La réservation a échoué. Veuillez réessayer.';
         }

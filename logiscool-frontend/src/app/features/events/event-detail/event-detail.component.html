@@ -19,7 +19,11 @@
           }
         </div>
         <h1>{{ event.title }}</h1>
-        <span class="badge badge-primary">{{ event.seat }} places disponibles</span>
+        @if (event.seat > 0) {
+          <span class="badge badge-primary">{{ event.seat }} place{{ event.seat > 1 ? 's' : '' }} disponible{{ event.seat > 1 ? 's' : '' }}</span>
+        } @else {
+          <span class="badge badge-danger">Complet</span>
+        }
       </div>
 
       <div class="event-detail-body">
@@ -48,7 +52,9 @@
           <h2>Réserver une place</h2>
 
           @if (authService.isLoggedIn()) {
-            @if (reservationSuccess) {
+            @if (event.seat <= 0) {
+              <div class="alert alert-error">Cet événement est complet. Plus aucune place disponible.</div>
+            } @else if (reservationSuccess) {
               <div class="alert alert-success reservation-success">
                 <p>Votre réservation a été enregistrée avec succès.</p>
                 <a routerLink="/reservations">Voir mes réservations</a>

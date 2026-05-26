@@ -196,6 +196,7 @@ h3 { font-size: 1.125rem; font-weight: 600; }
   }
 
   input, textarea, select {
+    width: 100%;
     padding: .6rem .85rem;
     border: 1.5px solid var(--color-border);
     border-radius: var(--radius-sm);
@@ -216,4 +217,12 @@ h3 { font-size: 1.125rem; font-weight: 600; }
     resize: vertical;
     min-height: 90px;
   }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+
+  .form-group { min-width: 0; }
 }
