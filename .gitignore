@@ -17,6 +17,7 @@ Thumbs.db
 .claude/
 
 # Fichiers hors projet
+.github/
 tfe-assets-final/
 SYNTHESE_PROJET.md
 JOURNAL_DEV.md
