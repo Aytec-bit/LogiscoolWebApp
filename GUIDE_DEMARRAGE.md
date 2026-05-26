@@ -55,6 +55,16 @@ docker compose down          # arrête, conserve les données
 docker compose down -v       # arrête ET efface la base de données
 ```
 
+### Mettre à jour (après un `git pull`)
+
+```bash
+git pull
+docker compose down -v
+docker compose up -d --build   # --build force la recompilation des images
+```
+
+> Sans `--build`, Docker utilise les anciennes images compilées et ignore les changements de code.
+
 ---
 
 ## 💻 Mode développement — modifier le code
