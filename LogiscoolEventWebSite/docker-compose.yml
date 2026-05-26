@@ -7,6 +7,8 @@ services:
       POSTGRES_DB: ${DB_NAME:-event}
     ports:
       - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME:-event}"]
       interval: 10s
@@ -66,3 +68,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+volumes:
+  postgres_data:
