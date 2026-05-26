@@ -45,12 +45,13 @@ Tous les services doivent afficher `healthy` ou `running`.
 👉 **http://localhost**
 
 > Le realm Keycloak et les comptes de test sont **importés automatiquement** — aucune configuration manuelle.
+> Au premier démarrage, **10 événements de démonstration** sont insérés automatiquement si la base est vide.
 
 ### Arrêter
 
 ```bash
-docker compose down          # arrête, conserve les données
-docker compose down -v       # arrête ET efface la base de données
+docker compose down          # arrête les conteneurs — les données sont CONSERVÉES (volume postgres_data)
+docker compose down -v       # arrête ET supprime le volume — les données sont EFFACÉES (reset complet)
 ```
 
 ---
@@ -138,6 +139,8 @@ Créés automatiquement par l'import du realm Keycloak :
 | `user1` | `user1pass` | USER | Consulter, réserver, annuler |
 | `admin1` | `admin1pass` | USER + ADMIN | Tout + créer/modifier/supprimer des événements |
 
+> **Inscription libre :** tout utilisateur créé via le bouton **"New user? Register"** sur la page de connexion Keycloak reçoit automatiquement le rôle `USER` et peut réserver des événements sans configuration manuelle.
+
 ---
 
 ## Ports utilisés
@@ -173,8 +176,8 @@ Attendre 60 secondes supplémentaires — Keycloak est lent au premier démarrag
 
 La base de données a un schéma ancien. Solution :
 ```bash
-docker compose down -v    # efface les volumes (données perdues)
-docker compose up -d      # repart d'une base vide et recrée les colonnes
+docker compose down -v    # efface le volume PostgreSQL (données perdues)
+docker compose up -d      # repart d'une base vide, recrée les colonnes et réinsère les 10 événements de démo
 ```
 
 ### Port 8090 déjà utilisé (mode dev)

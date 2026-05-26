@@ -773,3 +773,178 @@ Ouvrir `http://localhost:4200` avec `ng serve`. Vérifier :
 3. Page détail (connecté) : bouton "Réserver cet événement"
 4. Mes réservations : card avec badge vert "Confirmée" + bouton "Annuler"
 5. Admin dashboard : formulaire à gauche, tableau à droite, badge "ADMIN" dans le header
+
+---
+
+## [FIX-012] Auth : boucle infinie sur "Mes réservations" + message 409 qui ne s'affichait pas
+
+**Date :** 2026-05-26
+**Priorité :** 🔴 BLOQUANT
+**Catégorie :** Frontend — Keycloak / HTTP Interceptor
+
+### Problème
+1. La page "Mes réservations" se rechargait en boucle infinie pour les utilisateurs créés via le bouton "Register" de Keycloak.
+2. Après une double réservation, le message "Vous avez déjà réservé cet événement." ne s'affichait pas — la page rechargeait au lieu d'afficher l'erreur.
+
+### Cause
+Deux problèmes combinés :
+1. **`checkLoginIframe`** : Keycloak 26 a supprimé le mécanisme d'iframe de vérification de session. Avec l'ancienne config, KC26 déclenchait des vérifications répétées qui causaient des redirects full-page.
+2. **`authService.login()` dans le `.catch()` de l'interceptor** : quand `keycloak.updateToken(30)` échouait (ou était perturbé par les iframes KC26), le catch appelait `authService.login()` → redirect Keycloak complet → tout l'état Angular (messages d'erreur inclus) était effacé avant l'affichage.
+
+### Solution
+
+**Fix 1 — `keycloak.init.ts`**
+```typescript
+keycloak.init({
+  onLoad: 'check-sso',
+  silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
+  checkLoginIframe: false, // Désactivé : supprimé dans KC26, causait des redirects intempestifs
+})
+```
+
+**Fix 2 — `auth.interceptor.ts`**
+```typescript
+// Avant :
+keycloak.updateToken(30).catch(() => authService.login())
+// Après :
+keycloak.updateToken(30).catch(() => false)
+// Les erreurs HTTP (401, 403, 409…) remontent maintenant aux composants
+```
+
+### Fichiers modifiés
+- `logiscool-frontend/src/app/core/auth/keycloak.init.ts`
+- `logiscool-frontend/src/app/core/interceptors/auth.interceptor.ts`
+
+### Comment vérifier
+1. Se connecter, aller sur `/events/1`, réserver → message succès affiché.
+2. Recharger et réserver à nouveau → message "Vous avez déjà réservé cet événement." affiché **sans redirect**.
+3. Aller sur "Mes réservations" → page stable, aucun refresh infini.
+
+---
+
+## [FIX-013] Auth : utilisateur créé via Register n'avait pas le rôle USER → 403
+
+**Date :** 2026-05-26
+**Priorité :** 🔴 BLOQUANT
+**Catégorie :** Infrastructure — Keycloak
+
+### Problème
+Un utilisateur créé via le bouton "Register" sur la page de login Keycloak n'avait aucun rôle par défaut. Il recevait un **403 Forbidden** sur tous les endpoints protégés (`/api/reservations/my`, etc.) bien qu'il soit correctement authentifié.
+
+### Cause
+Le realm `logiscool` n'avait pas de rôle par défaut configuré. Keycloak n'assignait aucun rôle aux nouveaux utilisateurs inscrits via self-registration.
+
+### Solution
+Ajout de `"defaultRoles": ["USER"]` dans `keycloak/realm-export.json` :
+```json
+{
+  "realm": "logiscool",
+  "defaultRoles": ["USER"],
+  ...
+}
+```
+Le container Keycloak doit être recréé pour réimporter le realm :
+```bash
+docker compose up -d --force-recreate my-keycloak
+```
+
+### Fichiers modifiés
+- `LogiscoolEventWebSite/keycloak/realm-export.json`
+
+### Comment vérifier
+1. Aller sur `http://localhost` → Se connecter → cliquer "Register".
+2. Créer un compte (prénom, nom, email, username, mot de passe).
+3. Après inscription → redirection automatique vers l'app → "Mes réservations" accessible → aucun 403.
+
+---
+
+## [FIX-014] Admin : select "Tranche d'âge" trop étroit dans le formulaire
+
+**Date :** 2026-05-26
+**Priorité :** 🟡 MINEUR
+**Catégorie :** Frontend — UX
+
+### Problème
+Le select "Tranche d'âge" était placé dans la même ligne que "Type d'atelier" (`[Type | Tranche d'âge]`). La carte de formulaire ayant une largeur fixe de ~360 px, chaque colonne ne faisait que ~150 px — le select était trop étroit et le rendu peu lisible.
+
+### Solution
+Réorganisation des lignes du formulaire :
+- **Avant :** `[Type d'atelier | Tranche d'âge]` + `[Places | Durée]`
+- **Après :** `[Type d'atelier | Places]` + `[Tranche d'âge | Durée]`
+
+Les deux champs larges (Type + Tranche d'âge) sont maintenant chacun dans leur propre ligne, avec un champ court à côté.
+
+### Fichiers modifiés
+- `logiscool-frontend/src/app/features/admin/admin-dashboard/admin-dashboard.component.html`
+
+---
+
+## [FEAT-002] Données : 10 événements de démonstration au premier démarrage
+
+**Date :** 2026-05-26
+**Catégorie :** Backend — Data Seeding
+
+### Objectif
+Avoir des données de démonstration dès le premier `docker compose up`, sans manipulation manuelle.
+
+### Solution
+`DataInitializer.java` — composant Spring Boot `CommandLineRunner` dans `infrastructure/config/` :
+- Vérifie au démarrage si `eventJpaRepository.count() == 0`
+- Si oui, insère 10 événements variés (Scratch junior, Python, Robotique, Web, IA, Numérique…) couvrant différents types, tranches d'âge, lieux, durées et prix
+- Si non (données déjà présentes), ne fait rien
+
+```
+[DataInitializer] 10 événements de démonstration insérés.
+```
+
+### Fichiers créés
+- `LogiscoolEventWebSite/src/main/java/.../infrastructure/config/DataInitializer.java`
+
+---
+
+## [INFRA-002] Docker : volume persistant pour PostgreSQL
+
+**Date :** 2026-05-26
+**Catégorie :** Infrastructure — Docker
+
+### Problème
+`docker compose down` supprimait le conteneur PostgreSQL et effaçait toutes les données (événements, réservations) car aucun volume nommé n'était configuré.
+
+### Solution
+Ajout d'un volume nommé `postgres_data` monté sur `/var/lib/postgresql/data` :
+
+```yaml
+services:
+  db:
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+### Comportement après fix
+| Commande | Données |
+|---|---|
+| `docker compose down` | ✅ Conservées |
+| `docker compose stop` / `start` | ✅ Conservées |
+| `docker compose down -v` | ❌ Effacées (reset complet intentionnel) |
+
+### Fichiers modifiés
+- `LogiscoolEventWebSite/docker-compose.yml`
+
+---
+
+## [UX-001] Navbar : suppression du lien "Calendrier" redondant
+
+**Date :** 2026-05-26
+**Catégorie :** Frontend — UX
+
+### Problème
+La navbar contenait un lien "Calendrier" en plus du bouton "Calendrier" déjà présent en haut à droite des pages Événements/Calendrier. Ce doublon alourdissait la navigation inutilement.
+
+### Solution
+Suppression du lien `routerLink="/calendar"` dans la navbar. Le calendrier reste accessible via les boutons "Liste / Calendrier" sur la page des événements.
+
+### Fichiers modifiés
+- `logiscool-frontend/src/app/shared/components/navbar/navbar.component.html`
