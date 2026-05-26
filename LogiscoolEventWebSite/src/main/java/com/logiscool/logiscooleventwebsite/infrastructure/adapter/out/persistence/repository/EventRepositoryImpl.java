@@ -24,6 +24,13 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    public List<Event> findByFilters(String location, String type, String targetAge) {
+        return eventJpaRepository.findByFilters(location, type, targetAge).stream()
+                .map(EventPersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Event> findById(Long id) {
         return eventJpaRepository.findById(id)
                 .map(EventPersistenceMapper::toDomain);
@@ -39,5 +46,20 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public void deleteById(Long id) {
         eventJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<String> findDistinctLocations() {
+        return eventJpaRepository.findDistinctLocations();
+    }
+
+    @Override
+    public List<String> findDistinctTypes() {
+        return eventJpaRepository.findDistinctTypes();
+    }
+
+    @Override
+    public List<String> findDistinctTargetAges() {
+        return eventJpaRepository.findDistinctTargetAges();
     }
 }

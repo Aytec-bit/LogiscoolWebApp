@@ -20,6 +20,10 @@ export class AuthService {
     return keycloak.subject;
   }
 
+  getUsername(): string {
+    return keycloak.tokenParsed?.['preferred_username'] ?? keycloak.subject ?? '';
+  }
+
   login(): Promise<void> {
     return keycloak.login();
   }

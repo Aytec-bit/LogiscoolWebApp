@@ -6,7 +6,9 @@ import com.logiscool.logiscooleventwebsite.domain.model.Reservation;
 import com.logiscool.logiscooleventwebsite.domain.port.in.ReservationUseCase;
 import com.logiscool.logiscooleventwebsite.domain.port.out.EventRepository;
 import com.logiscool.logiscooleventwebsite.domain.port.out.ReservationRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,7 +44,12 @@ public class ReservationService implements ReservationUseCase {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void cancelReservation(Long id, String requestingUserId) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
+        if (!reservation.getUserId().equals(requestingUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot cancel another user's reservation");
+        }
         reservationRepository.deleteById(id);
     }
 }

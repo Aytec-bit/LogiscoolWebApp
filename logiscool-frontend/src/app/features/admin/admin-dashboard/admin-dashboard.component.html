@@ -1,75 +1,175 @@
 <div class="admin-container">
-  <h1>Administration des événements</h1>
+  <div class="admin-header">
+    <div>
+      <h1>Administration des événements</h1>
+      <p>Créez et gérez les ateliers de la plateforme.</p>
+    </div>
+    <span class="admin-badge">Admin</span>
+  </div>
 
-  <!-- Formulaire de création -->
-  <section class="create-section">
-    <h2>Créer un événement</h2>
-    <form (ngSubmit)="createEvent()" #eventForm="ngForm" class="create-form">
-      <div class="form-group">
-        <label for="title">Titre *</label>
-        <input id="title" type="text" [(ngModel)]="newEvent.title" name="title" required />
+  <div class="admin-layout">
+
+    <!-- ── Formulaire de création / modification ── -->
+    <div class="create-card">
+      <div class="create-card-header">
+        <h2>{{ editingEventId ? 'Modifier l\'événement' : 'Créer un événement' }}</h2>
       </div>
-      <div class="form-group">
-        <label for="description">Description *</label>
-        <textarea id="description" [(ngModel)]="newEvent.description" name="description" required></textarea>
-      </div>
-      <div class="form-group">
-        <label for="location">Lieu *</label>
-        <input id="location" type="text" [(ngModel)]="newEvent.location" name="location" required />
-      </div>
-      <div class="form-group">
-        <label for="seat">Nombre de places *</label>
-        <input id="seat" type="number" [(ngModel)]="newEvent.seat" name="seat" min="1" required />
-      </div>
-      <div class="form-group">
-        <label for="date">Date et heure *</label>
-        <input id="date" type="datetime-local" [(ngModel)]="newEvent.date" name="date" required />
-      </div>
-      <div class="form-group">
-        <label for="lengthTime">Durée *</label>
-        <input id="lengthTime" type="time" [(ngModel)]="newEvent.lengthTime" name="lengthTime" required />
+      <form (ngSubmit)="createEvent()" #eventForm="ngForm" class="create-form">
+
+        <div class="form-group">
+          <label for="title">Titre *</label>
+          <input id="title" type="text" [(ngModel)]="newEvent.title" name="title"
+                 placeholder="Ex : Atelier Scratch" required />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea id="description" [(ngModel)]="newEvent.description" name="description"
+                    placeholder="Décrivez l'atelier…" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Lieu *</label>
+          <input id="location" type="text" [(ngModel)]="newEvent.location" name="location"
+                 placeholder="Ex : Salle A101" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="type">Type d'atelier</label>
+            <input
+              id="type"
+              type="text"
+              [(ngModel)]="newEvent.type"
+              name="type"
+              placeholder="Ex : Scratch"
+              list="type-suggestions"
+            />
+            <datalist id="type-suggestions">
+              @for (t of predefinedTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label for="targetAge">Tranche d'âge</label>
+            <select id="targetAge" [(ngModel)]="newEvent.targetAge" name="targetAge">
+              <option value="">— choisir —</option>
+              @for (age of predefinedAges; track age) {
+                <option [value]="age">{{ age }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="seat">Places *</label>
+            <input id="seat" type="number" [(ngModel)]="newEvent.seat" name="seat"
+                   min="1" placeholder="20" required />
+          </div>
+          <div class="form-group">
+            <label for="lengthTime">Durée *</label>
+            <input id="lengthTime" type="time" [(ngModel)]="newEvent.lengthTime" name="lengthTime" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Prix (€)</label>
+          <input id="price" type="number" [(ngModel)]="newEvent.price" name="price"
+                 min="0" step="0.01" placeholder="0.00 (gratuit si vide)" />
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date et heure *</label>
+          <input id="date" type="datetime-local" [(ngModel)]="newEvent.date" name="date" required />
+        </div>
+
+        @if (createError) {
+          <div class="alert alert-error">{{ createError }}</div>
+        }
+        @if (createSuccess) {
+          <div class="alert alert-success">
+            {{ editingEventId ? 'Événement modifié avec succès.' : 'Événement créé avec succès.' }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting">
+            {{ submitting ? 'Enregistrement…' : (editingEventId ? 'Enregistrer les modifications' : "Créer l'événement") }}
+          </button>
+          @if (editingEventId) {
+            <button type="button" class="btn btn-ghost" (click)="cancelEdit()">Annuler</button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Liste des événements ── -->
+    <div class="events-card">
+      <div class="events-card-header">
+        <h2>Événements existants</h2>
+        @if (!loading && !error) {
+          <span class="count-badge">{{ events.length }}</span>
+        }
       </div>
 
-      <p *ngIf="createError" class="error">{{ createError }}</p>
-      <p *ngIf="createSuccess" class="success">Événement créé avec succès.</p>
+      @if (loading) {
+        <div class="loading-state" style="padding:1.5rem">Chargement…</div>
+      }
+      @if (error) {
+        <div class="alert alert-error" style="margin:1rem">{{ error }}</div>
+      }
+      @if (!loading && !error) {
+        @if (events.length === 0) {
+          <div class="empty-state">
+            <p>Aucun événement pour le moment.</p>
+          </div>
+        } @else {
+          <table class="events-table">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Âge</th>
+                <th>Date</th>
+                <th>Lieu</th>
+                <th>Places</th>
+                <th>Prix</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of events; track event.id) {
+                <tr>
+                  <td class="title-cell">{{ event.title }}</td>
+                  <td>
+                    @if (event.type) {
+                      <span class="type-chip">{{ event.type }}</span>
+                    } @else {
+                      <span class="muted">—</span>
+                    }
+                  </td>
+                  <td class="muted">{{ event.targetAge ?? '—' }}</td>
+                  <td class="muted">{{ event.date | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="muted">{{ event.location }}</td>
+                  <td><span class="badge badge-primary">{{ event.seat }}</span></td>
+                  <td class="muted">{{ event.price != null ? (event.price | number:'1.2-2') + ' €' : 'Gratuit' }}</td>
+                  <td class="action-cell">
+                    @if (isFutureEvent(event.date)) {
+                      <button class="btn btn-outline btn-sm" (click)="startEdit(event)">Modifier</button>
+                    }
+                    <button class="btn btn-danger btn-sm" (click)="deleteEvent(event.id)">
+                      Supprimer
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="submitting">
-        {{ submitting ? 'Création en cours...' : "Créer l'événement" }}
-      </button>
-    </form>
-  </section>
-
-  <!-- Liste des événements existants -->
-  <section class="events-section">
-    <h2>Événements existants</h2>
-
-    <div *ngIf="loading" class="loading">Chargement...</div>
-    <div *ngIf="error" class="error">{{ error }}</div>
-    <p *ngIf="!loading && !error && events.length === 0">Aucun événement pour le moment.</p>
-
-    <table *ngIf="!loading && !error && events.length > 0" class="events-table">
-      <thead>
-        <tr>
-          <th>Titre</th>
-          <th>Date</th>
-          <th>Lieu</th>
-          <th>Places</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let event of events">
-          <td>{{ event.title }}</td>
-          <td>{{ event.date | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ event.location }}</td>
-          <td>{{ event.seat }}</td>
-          <td>
-            <button class="btn btn-danger btn-sm" (click)="deleteEvent(event.id)">
-              Supprimer
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  </div>
 </div>

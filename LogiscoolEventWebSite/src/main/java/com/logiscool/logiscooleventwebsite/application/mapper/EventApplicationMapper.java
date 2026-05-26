@@ -14,9 +14,12 @@ public class EventApplicationMapper {
                 dto.getTitle(),
                 dto.getDescription(),
                 dto.getLocation(),
+                dto.getType(),
+                dto.getTargetAge(),
                 dto.getSeat(),
                 dto.getDate(),
-                dto.getLengthTime()
+                dto.getLengthTime(),
+                dto.getPrice()
         );
     }
 
@@ -26,9 +29,12 @@ public class EventApplicationMapper {
                 event.getTitle(),
                 event.getDescription(),
                 event.getLocation(),
+                event.getType(),
+                event.getTargetAge(),
                 event.getSeat(),
                 event.getDate(),
-                event.getLengthTime()
+                event.getLengthTime(),
+                event.getPrice()
         );
     }
 }

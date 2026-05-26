@@ -42,8 +42,10 @@ public class ReservationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelReservation(@PathVariable Long id) {
-        reservationUseCase.deleteById(id);
+    public ResponseEntity<Void> cancelReservation(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt) {
+        reservationUseCase.cancelReservation(id, jwt.getSubject());
         return ResponseEntity.noContent().build();
     }
 }

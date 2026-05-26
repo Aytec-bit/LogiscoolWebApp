@@ -7,5 +7,5 @@ import java.util.List;
 public interface ReservationUseCase {
     Reservation createReservation(String userId, Long eventId);
     List<Reservation> findByUserId(String userId);
-    void deleteById(Long id);
+    void cancelReservation(Long id, String requestingUserId);
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { NgFor, NgIf, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 interface EventSummary {
   id: number;
@@ -20,8 +22,9 @@ interface ReservationResponse {
 @Component({
   selector: 'app-my-reservations',
   standalone: true,
-  imports: [NgFor, NgIf, DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './my-reservations.component.html',
+  styleUrl: './my-reservations.component.scss',
 })
 export class MyReservationsComponent implements OnInit {
   reservations: ReservationResponse[] = [];
@@ -37,7 +40,7 @@ export class MyReservationsComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.error = null;
-    this.http.get<ReservationResponse[]>('http://localhost:8090/api/reservations/my').subscribe({
+    this.http.get<ReservationResponse[]>(`${environment.apiUrl}/api/reservations/my`).subscribe({
       next: (data) => {
         this.reservations = data;
         this.loading = false;
@@ -50,7 +53,7 @@ export class MyReservationsComponent implements OnInit {
   }
 
   cancel(id: number): void {
-    this.http.delete(`http://localhost:8090/api/reservations/${id}`).subscribe({
+    this.http.delete(`${environment.apiUrl}/api/reservations/${id}`).subscribe({
       next: () => this.load(),
       error: () => {
         this.error = "Impossible d'annuler la réservation.";

@@ -1,24 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { NgIf, DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
-
-interface EventResponse {
-  id: number;
-  title: string;
-  description: string;
-  location: string;
-  seat: number;
-  date: string;
-  lengthTime: string;
-}
+import { EventResponse } from '../../../core/models/event.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [NgIf, DatePipe, RouterLink],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   templateUrl: './event-detail.component.html',
+  styleUrl: './event-detail.component.scss',
 })
 export class EventDetailComponent implements OnInit {
   event: EventResponse | null = null;
@@ -37,7 +30,7 @@ export class EventDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    this.http.get<EventResponse>(`http://localhost:8090/api/events/${id}`).subscribe({
+    this.http.get<EventResponse>(`${environment.apiUrl}/api/events/${id}`).subscribe({
       next: (data) => {
         this.event = data;
         this.loading = false;
@@ -57,7 +50,7 @@ export class EventDetailComponent implements OnInit {
     this.reservationSuccess = false;
     this.reservationError = null;
 
-    this.http.post('http://localhost:8090/api/reservations', { eventId: this.event.id }).subscribe({
+    this.http.post(`${environment.apiUrl}/api/reservations`, { eventId: this.event.id }).subscribe({
       next: () => {
         this.reservationSuccess = true;
         this.reserving = false;

@@ -1,0 +1,150 @@
+.event-detail-container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 1.75rem;
+  transition: color var(--transition);
+  text-decoration: none;
+
+  &:hover { color: var(--color-primary); text-decoration: none; }
+}
+
+.event-detail {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.event-detail-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: .5rem;
+  }
+}
+
+.header-badges {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+
+.badge-type {
+  display: inline-flex;
+  align-items: center;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .2rem .65rem;
+  border-radius: 99px;
+}
+
+.badge-age {
+  display: inline-flex;
+  align-items: center;
+  background: #f3e8ff;
+  color: #7c3aed;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .2rem .65rem;
+  border-radius: 99px;
+}
+
+.event-detail-body {
+  padding: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+
+  @media (max-width: 500px) { grid-template-columns: 1fr; }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+
+  .info-label {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--color-text-light);
+  }
+
+  .info-value {
+    font-size: .95rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+}
+
+.event-description {
+  color: var(--color-text-muted);
+  font-size: .95rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reservation-section {
+  h2 {
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+  }
+}
+
+.login-prompt {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  flex-wrap: wrap;
+
+  p {
+    color: var(--color-text-muted);
+    font-size: .9rem;
+    flex: 1;
+  }
+}
+
+.reservation-success {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+
+  p {
+    font-weight: 600;
+    color: #065F46;
+  }
+
+  a {
+    font-size: .875rem;
+    font-weight: 500;
+  }
+}

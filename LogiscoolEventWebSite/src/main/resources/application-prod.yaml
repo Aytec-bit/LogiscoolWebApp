@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+
+logging:
+  level:
+    com.logiscool: INFO
+    root: WARN

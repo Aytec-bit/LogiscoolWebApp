@@ -1,0 +1,17 @@
+# Secrets — ne jamais commiter
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outils locaux — ne pas commiter
+.playwright-mcp/
+.claude/

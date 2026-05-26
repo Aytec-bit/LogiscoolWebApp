@@ -13,9 +13,12 @@ public class EventPersistenceMapper {
                 entity.getTitle(),
                 entity.getDescription(),
                 entity.getLocation(),
+                entity.getType(),
+                entity.getTargetAge(),
                 entity.getSeat(),
                 entity.getDate(),
-                entity.getLengthTime()
+                entity.getLengthTime(),
+                entity.getPrice()
         );
     }
 
@@ -25,9 +28,12 @@ public class EventPersistenceMapper {
                 event.getTitle(),
                 event.getDescription(),
                 event.getLocation(),
+                event.getType(),
+                event.getTargetAge(),
                 event.getSeat(),
                 event.getDate(),
-                event.getLengthTime()
+                event.getLengthTime(),
+                event.getPrice()
         );
     }
 }

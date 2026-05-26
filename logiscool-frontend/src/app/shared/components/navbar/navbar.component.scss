@@ -1,0 +1,78 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 2rem;
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 8px rgba(0,0,0,.05);
+}
+
+.navbar-brand {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -.02em;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: none; opacity: .85; }
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin-left: auto;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .4rem .85rem;
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: background var(--transition), color var(--transition);
+  text-decoration: none;
+
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    background: var(--color-bg);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  &.active,
+  &.active-link {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.navbar-user {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: .3rem .8rem;
+  border-radius: 99px;
+  border: 1px solid var(--color-border);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
