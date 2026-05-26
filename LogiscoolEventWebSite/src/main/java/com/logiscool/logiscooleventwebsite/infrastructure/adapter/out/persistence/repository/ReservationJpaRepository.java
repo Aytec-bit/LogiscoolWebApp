@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ReservationJpaRepository extends JpaRepository<ReservationJpaEntity, Long> {
     List<ReservationJpaEntity> findByUserId(String userId);
-    boolean existsByUserIdAndEventEventId(String userId, Long eventId);
+    // event_Id : naviguer vers le champ "event" puis son champ "id"
+    boolean existsByUserIdAndEvent_Id(String userId, Long eventId);
 }

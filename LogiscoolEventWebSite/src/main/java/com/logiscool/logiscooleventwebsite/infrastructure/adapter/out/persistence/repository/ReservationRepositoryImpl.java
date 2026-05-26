@@ -50,6 +50,6 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public boolean existsByUserIdAndEventId(String userId, Long eventId) {
-        return reservationJpaRepository.existsByUserIdAndEventEventId(userId, eventId);
+        return reservationJpaRepository.existsByUserIdAndEvent_Id(userId, eventId);
     }
 }
