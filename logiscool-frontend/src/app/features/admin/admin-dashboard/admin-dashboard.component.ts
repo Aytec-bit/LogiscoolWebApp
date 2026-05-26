@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { EventResponse } from '../../../core/models/event.model';
 import { environment } from '../../../../environments/environment';
@@ -22,7 +24,7 @@ const PREDEFINED_AGES = [
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   events: EventResponse[] = [];
   loading = true;
   error: string | null = null;
@@ -56,6 +58,8 @@ export class AdminDashboardComponent implements OnInit {
     price:       null,
   };
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private http: HttpClient,
     public authService: AuthService,
@@ -70,18 +74,26 @@ export class AdminDashboardComponent implements OnInit {
     this.loadEvents();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadEvents(): void {
     this.loading = true;
-    this.http.get<EventResponse[]>(`${environment.apiUrl}/api/events`).subscribe({
-      next: (data) => {
-        this.events = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Impossible de charger les événements.';
-        this.loading = false;
-      },
-    });
+    this.http
+      .get<EventResponse[]>(`${environment.apiUrl}/api/events`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.events = data;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'Impossible de charger les événements.';
+          this.loading = false;
+        },
+      });
   }
 
   isFutureEvent(dateStr: string): boolean {
@@ -119,6 +131,7 @@ export class AdminDashboardComponent implements OnInit {
     this.createError   = null;
     this.createSuccess = false;
 
+    // Required field validation
     if (
       !this.newEvent.title.trim() ||
       !this.newEvent.description.trim() ||
@@ -132,6 +145,13 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Future date validation
+    if (new Date(this.newEvent.date) <= new Date()) {
+      this.createError = "La date de l'événement doit être dans le futur.";
+      return;
+    }
+
+    // Price validation
     if (this.newEvent.price !== null && this.newEvent.price < 0) {
       this.createError = 'Le prix ne peut pas être négatif.';
       return;
@@ -151,44 +171,70 @@ export class AdminDashboardComponent implements OnInit {
     };
 
     if (this.editingEventId !== null) {
-      this.http.put<EventResponse>(`${environment.apiUrl}/api/events/${this.editingEventId}`, body).subscribe({
-        next: (updated) => {
-          this.events = this.events.map(e => e.id === updated.id ? updated : e);
-          this.createSuccess  = true;
-          this.submitting     = false;
-          this.editingEventId = null;
-          this.cancelEdit();
-        },
-        error: () => {
-          this.createError = "La modification de l'événement a échoué.";
-          this.submitting  = false;
-        },
-      });
+      this.http
+        .put<EventResponse>(`${environment.apiUrl}/api/events/${this.editingEventId}`, body)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (updated) => {
+            this.events = this.events.map(e => e.id === updated.id ? updated : e);
+            this.createSuccess  = true;
+            this.submitting     = false;
+            this.editingEventId = null;
+            this.cancelEdit();
+          },
+          error: (err) => {
+            this.createError = this.extractErrorMessage(err, "La modification de l'événement a échoué.");
+            this.submitting  = false;
+          },
+        });
     } else {
-      this.http.post<EventResponse>(`${environment.apiUrl}/api/events`, body).subscribe({
-        next: (created) => {
-          this.events.push(created);
-          this.createSuccess = true;
-          this.submitting    = false;
-          this.cancelEdit();
-        },
-        error: () => {
-          this.createError = "La création de l'événement a échoué.";
-          this.submitting  = false;
-        },
-      });
+      this.http
+        .post<EventResponse>(`${environment.apiUrl}/api/events`, body)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (created) => {
+            this.events.push(created);
+            this.createSuccess = true;
+            this.submitting    = false;
+            this.cancelEdit();
+          },
+          error: (err) => {
+            this.createError = this.extractErrorMessage(err, "La création de l'événement a échoué.");
+            this.submitting  = false;
+          },
+        });
     }
   }
 
   deleteEvent(id: number): void {
     if (!confirm('Supprimer cet événement ? Cette action est irréversible.')) return;
-    this.http.delete(`${environment.apiUrl}/api/events/${id}`).subscribe({
-      next: () => {
-        this.events = this.events.filter(e => e.id !== id);
-      },
-      error: () => {
-        this.error = "Impossible de supprimer l'événement.";
-      },
-    });
+    this.http
+      .delete(`${environment.apiUrl}/api/events/${id}`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.events = this.events.filter(e => e.id !== id);
+        },
+        error: (err) => {
+          if (err.status === 404) {
+            this.error = "Cet événement est introuvable.";
+          } else if (err.status === 403) {
+            this.error = "Vous n'avez pas les droits pour supprimer cet événement.";
+          } else {
+            this.error = "Impossible de supprimer l'événement.";
+          }
+        },
+      });
+  }
+
+  private extractErrorMessage(err: any, fallback: string): string {
+    if (err.status === 400) {
+      const errors: string[] = err.error?.errors;
+      if (errors?.length) return errors.join(' ');
+      return err.error?.message || 'Données invalides.';
+    }
+    if (err.status === 403) return "Vous n'avez pas les droits pour effectuer cette action.";
+    if (err.status === 404) return "Événement introuvable.";
+    return err.error?.message || fallback;
   }
 }

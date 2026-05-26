@@ -47,4 +47,9 @@ public class ReservationRepositoryImpl implements ReservationRepository {
                 .map(ReservationPersistenceMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public boolean existsByUserIdAndEventId(String userId, Long eventId) {
+        return reservationJpaRepository.existsByUserIdAndEventEventId(userId, eventId);
+    }
 }

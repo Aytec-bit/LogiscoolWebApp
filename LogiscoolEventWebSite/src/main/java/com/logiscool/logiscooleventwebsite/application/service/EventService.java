@@ -5,6 +5,7 @@ import com.logiscool.logiscooleventwebsite.domain.model.Event;
 import com.logiscool.logiscooleventwebsite.domain.port.in.EventUseCase;
 import com.logiscool.logiscooleventwebsite.domain.port.out.EventRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,7 @@ public class EventService implements EventUseCase {
     }
 
     @Override
+    @Transactional
     public Event updateEvent(Long id, Event event) {
         eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
         event.setId(id);
@@ -45,7 +47,9 @@ public class EventService implements EventUseCase {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
+        eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(id));
         eventRepository.deleteById(id);
     }
 

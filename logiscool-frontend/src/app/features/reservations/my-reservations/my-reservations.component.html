@@ -39,8 +39,12 @@
                 {{ r.status === 'CONFIRMED' ? 'Confirmée' : 'Annulée' }}
               </span>
               @if (r.status === 'CONFIRMED') {
-                <button class="btn btn-danger btn-sm" (click)="cancel(r.id)">
-                  Annuler
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="cancel(r.id)"
+                  [disabled]="cancellingId === r.id"
+                >
+                  {{ cancellingId === r.id ? 'Annulation…' : 'Annuler' }}
                 </button>
               }
             </div>

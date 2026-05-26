@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 interface EventSummary {
@@ -26,10 +28,13 @@ interface ReservationResponse {
   templateUrl: './my-reservations.component.html',
   styleUrl: './my-reservations.component.scss',
 })
-export class MyReservationsComponent implements OnInit {
+export class MyReservationsComponent implements OnInit, OnDestroy {
   reservations: ReservationResponse[] = [];
   loading = true;
   error: string | null = null;
+  cancellingId: number | null = null;
+
+  private destroy$ = new Subject<void>();
 
   constructor(private http: HttpClient) {}
 
@@ -37,27 +42,52 @@ export class MyReservationsComponent implements OnInit {
     this.load();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   load(): void {
     this.loading = true;
     this.error = null;
-    this.http.get<ReservationResponse[]>(`${environment.apiUrl}/api/reservations/my`).subscribe({
-      next: (data) => {
-        this.reservations = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Impossible de charger vos réservations.';
-        this.loading = false;
-      },
-    });
+    this.http
+      .get<ReservationResponse[]>(`${environment.apiUrl}/api/reservations/my`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.reservations = data;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'Impossible de charger vos réservations.';
+          this.loading = false;
+        },
+      });
   }
 
   cancel(id: number): void {
-    this.http.delete(`${environment.apiUrl}/api/reservations/${id}`).subscribe({
-      next: () => this.load(),
-      error: () => {
-        this.error = "Impossible d'annuler la réservation.";
-      },
-    });
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) return;
+    this.cancellingId = id;
+    this.error = null;
+
+    this.http
+      .delete(`${environment.apiUrl}/api/reservations/${id}`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.cancellingId = null;
+          this.load();
+        },
+        error: (err) => {
+          this.cancellingId = null;
+          if (err.status === 403) {
+            this.error = "Vous ne pouvez pas annuler la réservation d'un autre utilisateur.";
+          } else if (err.status === 404) {
+            this.error = 'Cette réservation est introuvable.';
+          } else {
+            this.error = "Impossible d'annuler la réservation.";
+          }
+        },
+      });
   }
 }

@@ -4,9 +4,11 @@ import com.logiscool.logiscooleventwebsite.application.dto.EventRequestDTO;
 import com.logiscool.logiscooleventwebsite.application.dto.EventResponseDTO;
 import com.logiscool.logiscooleventwebsite.application.mapper.EventApplicationMapper;
 import com.logiscool.logiscooleventwebsite.domain.port.in.EventUseCase;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +25,6 @@ public class EventController {
     /**
      * GET /api/events
      * Supports optional filter query parameters: location, type, targetAge
-     * Example: GET /api/events?type=Scratch&targetAge=7-10+ans
      */
     @GetMapping
     public ResponseEntity<List<EventResponseDTO>> getAllEvents(
@@ -52,7 +53,7 @@ public class EventController {
 
     /**
      * GET /api/events/filter-options
-     * Returns distinct values for all filter dropdowns (locations, types, targetAges)
+     * Returns distinct values for all filter dropdowns
      */
     @GetMapping("/filter-options")
     public ResponseEntity<Map<String, List<String>>> getFilterOptions() {
@@ -72,15 +73,18 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<EventResponseDTO> createEvent(@RequestBody EventRequestDTO dto) {
+    public ResponseEntity<EventResponseDTO> createEvent(@Valid @RequestBody EventRequestDTO dto) {
         EventResponseDTO response = EventApplicationMapper.toResponseDTO(
                 eventUseCase.createEvent(EventApplicationMapper.toDomain(dto))
         );
-        return ResponseEntity.ok(response);
+        URI location = URI.create("/api/events/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventResponseDTO> updateEvent(@PathVariable Long id, @RequestBody EventRequestDTO dto) {
+    public ResponseEntity<EventResponseDTO> updateEvent(
+            @PathVariable Long id,
+            @Valid @RequestBody EventRequestDTO dto) {
         EventResponseDTO response = EventApplicationMapper.toResponseDTO(
                 eventUseCase.updateEvent(id, EventApplicationMapper.toDomain(dto))
         );

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ReservationJpaRepository extends JpaRepository<ReservationJpaEntity, Long> {
     List<ReservationJpaEntity> findByUserId(String userId);
+    boolean existsByUserIdAndEventEventId(String userId, Long eventId);
 }

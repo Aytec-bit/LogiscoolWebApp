@@ -11,4 +11,5 @@ public interface ReservationRepository {
     Reservation save(Reservation reservation);
     void deleteById(Long id);
     List<Reservation> findByUserId(String userId);
+    boolean existsByUserIdAndEventId(String userId, Long eventId);
 }
