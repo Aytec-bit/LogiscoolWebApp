@@ -17,7 +17,7 @@ Il existe **deux modes** selon ce que tu veux faire :
 
 ```bash
 # 1. Cloner le projet
-git clone <URL_DU_DEPOT>
+git clone https://github.com/Aytec-bit/LogiscoolWebApp.git
 cd LogiscoolWebApp/LogiscoolEventWebSite
 
 # 2. Créer le fichier de configuration (obligatoire, une seule fois)
@@ -79,7 +79,7 @@ Liens d'installation si nécessaire :
 ### Étape 1 — Cloner et configurer
 
 ```bash
-git clone <URL_DU_DEPOT>
+git clone https://github.com/Aytec-bit/LogiscoolWebApp.git
 cd LogiscoolWebApp/LogiscoolEventWebSite
 copy .env.example .env        # Windows
 # cp .env.example .env        # macOS / Linux

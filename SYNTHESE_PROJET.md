@@ -649,4 +649,4 @@ docker compose down
 
 ---
 
-*Document mis à jour le 11 mai 2026 — Projet LogiscoolWebApp*
+*Document mis à jour le 27 mai 2026 — Projet LogiscoolWebApp*
