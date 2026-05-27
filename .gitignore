@@ -15,3 +15,13 @@ Thumbs.db
 # Outils locaux — ne pas commiter
 .playwright-mcp/
 .claude/
+
+# Fichiers hors-projet (TFE, documents personnels, scripts utilitaires)
+tfe-assets-final/
+logs.ps1
+logs.sh
+start.ps1
+start.sh
+stop.ps1
+stop.sh
+*.pdf
